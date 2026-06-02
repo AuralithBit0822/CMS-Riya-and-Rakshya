@@ -1,0 +1,11 @@
+services:
+  - type: static
+    name: rnr-food-products
+    buildCommand: npm install --unsafe-perm && npm rebuild && npm run build
+    publishDir: build
+    envVars:
+      - key: NODE_VERSION
+        value: "18"
+      - key: NPM_CONFIG_UNSAFE_PERM
+        value: "true"
+    startCommand: echo "Static site - no server needed"
