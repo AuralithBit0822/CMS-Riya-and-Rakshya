@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 
-const API_BASE = process.env.REACT_APP_CMS_API || 'http://127.0.0.1:8000/api';
+function getApiBase() {
+  if (window.location.hostname === 'admin.rnrfood.com') {
+    return '/api';
+  }
+  return process.env.REACT_APP_CMS_API || 'http://127.0.0.1:8000/api';
+}
+
+const API_BASE = getApiBase();
 
 function getToken() {
   return localStorage.getItem('admin_token');

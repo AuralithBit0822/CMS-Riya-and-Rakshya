@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rnrfood.com/sitemap.xml
+
+# Block build artifacts
+Disallow: /static/js/*.map

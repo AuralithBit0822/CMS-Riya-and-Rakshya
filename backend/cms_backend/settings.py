@@ -23,12 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-grbjto1u0#@*mb6-oo$&-=xjhde52qk&n_w+)a6v&_c6*8zhcd'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True #testing
+DEBUG = False  # Set to False for production, can be overridden by environment variable in deployment settings  
 
 ALLOWED_HOSTS = [
     "cms-riya-and-rakshya.onrender.com",
     "127.0.0.1",
     "localhost",
+    "admin.rnrfood.com",
 ]
 
 
@@ -41,11 +43,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'cms',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -120,5 +125,27 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+FRONTEND_BUILD_DIR = BASE_DIR / 'frontend_build'
+if FRONTEND_BUILD_DIR.exists():
+    STATICFILES_DIRS = [FRONTEND_BUILD_DIR / 'static']
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
+
+CORS_ALLOWED_ORIGINS = [
+    "https://rnrfood.com",
+    "https://admin.rnrfood.com",
+    "https://cms-riya-and-rakshya.onrender.com",
+    "http://localhost:3000",
+]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -1,2 +1,4 @@
 Django==6.0.5
 gunicorn
+django-cors-headers
+whitenoise

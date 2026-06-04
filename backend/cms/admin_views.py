@@ -9,15 +9,13 @@ from django.views.decorators.http import require_http_methods
 
 from .models import Category, ContactInfo, Feedback, HomePageContent, Order, Product
 
+from django.conf import settings
+
 ADMIN_TOKENS = {}
 
 
 def cors_response(data, status=200):
-    response = JsonResponse(data, status=status, safe=not isinstance(data, list))
-    response["Access-Control-Allow-Origin"] = "*"
-    response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-    response["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    return response
+    return JsonResponse(data, status=status, safe=not isinstance(data, list))
 
 
 def decimal_to_number(value):
