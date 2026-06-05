@@ -26,16 +26,20 @@ export default function AdminProducts() {
       ]);
       setProducts(p);
       setCategories(c);
-    } catch {
-      showToast('Failed to load data');
+    } catch (e) {
+      showToast(e.message || 'Failed to load data');
     }
   }, [showToast]);
 
   useEffect(() => { load(); }, [load]);
 
   const openCreate = () => {
+    if (categories.length === 0) {
+      showToast('Create a category first before adding products');
+      return;
+    }
     setForm({ ...EMPTY, categoryId: categories[0]?.id || '' });
-    setModal('create');
+    setModal({ type: 'create' });
   };
 
   const openEdit = (p) => {
@@ -72,8 +76,8 @@ export default function AdminProducts() {
       }
       setModal(null);
       load();
-    } catch {
-      showToast('Failed to save product');
+    } catch (e) {
+      showToast(e.message || 'Failed to save product');
     }
   };
 
@@ -83,8 +87,8 @@ export default function AdminProducts() {
       await adminDelete(`/admin/products/${id}/`);
       showToast('Product deleted');
       load();
-    } catch {
-      showToast('Failed to delete product');
+    } catch (e) {
+      showToast(e.message || 'Failed to delete product');
     }
   };
 
@@ -95,7 +99,7 @@ export default function AdminProducts() {
       const result = await adminUpload(file, 'products');
       setForm(f => ({ ...f, image: result.url }));
       showToast('Image uploaded');
-    } catch { showToast('Failed to upload image'); }
+    } catch (e) { showToast(e.message || 'Failed to upload image'); }
   };
 
   const addSizeOption = () => {

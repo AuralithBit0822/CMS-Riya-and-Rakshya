@@ -82,7 +82,10 @@ export async function adminCreate(path, data) {
     headers: authHeaders(),
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error(`Create failed: ${res.status}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Create failed: ${res.status}`);
+  }
   return res.json();
 }
 
@@ -92,7 +95,10 @@ export async function adminUpdate(path, data) {
     headers: authHeaders(),
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error(`Update failed: ${res.status}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Update failed: ${res.status}`);
+  }
   return res.json();
 }
 
@@ -101,6 +107,77 @@ export async function adminDelete(path, data) {
   if (data) opts.body = JSON.stringify(data);
   const res = await fetch(`${API_BASE}${path}`, opts);
   if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+  return res.json();
+}
+
+export async function checkSetupStatus() {
+  try {
+    const res = await fetch(`${API_BASE}/admin/setup-status/`);
+    const data = await res.json();
+    return data.needsSetup;
+  } catch {
+    return false;
+  }
+}
+
+export async function adminSetup(username, email, password) {
+  const res = await fetch(`${API_BASE}/admin/setup/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, email, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Setup failed');
+  }
+  return res.json();
+}
+
+export async function changePassword(currentPassword, newPassword) {
+  const res = await fetch(`${API_BASE}/admin/change-password/`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Change password failed');
+  }
+  return res.json();
+}
+
+export async function forgotPassword(email) {
+  const res = await fetch(`${API_BASE}/admin/forgot-password/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  return res.json();
+}
+
+export async function verifyResetCode(email, code) {
+  const res = await fetch(`${API_BASE}/admin/verify-reset-code/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Invalid code');
+  }
+  return res.json();
+}
+
+export async function resetPassword(token, password) {
+  const res = await fetch(`${API_BASE}/admin/reset-password/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Reset failed');
+  }
   return res.json();
 }
 

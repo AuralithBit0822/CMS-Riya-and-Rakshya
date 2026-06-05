@@ -20,6 +20,8 @@ import AdminFeedback from './pages/admin/AdminFeedback';
 import AdminContent from './pages/admin/AdminContent';
 import AdminContact from './pages/admin/AdminContact';
 import AdminMedia from './pages/admin/AdminMedia';
+import ChangePassword from './pages/admin/ChangePassword';
+import ResetPassword from './pages/admin/ResetPassword';
 import './styles/global.css';
 import './styles/Admin.css';
 
@@ -96,6 +98,8 @@ export default function App() {
             <Route path="/admin/content" element={<PrivateRoute><AdminContent /></PrivateRoute>} />
             <Route path="/admin/contact" element={<PrivateRoute><AdminContact /></PrivateRoute>} />
             <Route path="/admin/media" element={<PrivateRoute><AdminMedia /></PrivateRoute>} />
+            <Route path="/admin/change-password" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
+            <Route path="/admin/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<Navigate to="/admin/login" replace />} />
           </Routes>
         ) : mode === 'public' ? (
@@ -135,6 +139,8 @@ export default function App() {
             <Route path="/admin/content" element={<PrivateRoute><AdminContent /></PrivateRoute>} />
             <Route path="/admin/contact" element={<PrivateRoute><AdminContact /></PrivateRoute>} />
             <Route path="/admin/media" element={<PrivateRoute><AdminMedia /></PrivateRoute>} />
+            <Route path="/admin/change-password" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
+            <Route path="/admin/reset-password" element={<ResetPassword />} />
             <Route path="*" element={
               <Layout>
                 <Routes>

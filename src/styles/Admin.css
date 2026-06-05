@@ -680,6 +680,63 @@
   }
 }
 
+/* ── Change Password ──────────────────────────── */
+
+.admin-change-password {
+  display: flex;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.admin-change-password-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 32px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+
+.admin-change-password-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.admin-change-password-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.admin-success-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  color: #166534;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.admin-btn-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+}
+
+.admin-btn-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Login page title add ─────────────────────── */
+
 @media (max-width: 600px) {
   .admin-sidebar {
     width: 0;

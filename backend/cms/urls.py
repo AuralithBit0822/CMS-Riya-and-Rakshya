@@ -25,4 +25,10 @@ urlpatterns = [
     path("admin/contact-info/", admin_views.admin_contact_info, name="admin-contact-info"),
     path("admin/upload/", admin_views.admin_upload, name="admin-upload"),
     path("admin/media/", admin_views.admin_media, name="admin-media"),
+    path("admin/setup-status/", admin_views.setup_status, name="setup-status"),
+    path("admin/setup/", admin_views.admin_setup, name="admin-setup"),
+    path("admin/change-password/", admin_views.change_password, name="change-password"),
+    path("admin/forgot-password/", admin_views.forgot_password, name="forgot-password"),
+    path("admin/verify-reset-code/", admin_views.verify_reset_code, name="verify-reset-code"),
+    path("admin/reset-password/", admin_views.reset_password, name="reset-password"),
 ]

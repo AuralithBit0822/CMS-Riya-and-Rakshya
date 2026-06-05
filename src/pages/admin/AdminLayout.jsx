@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, Tags, ShoppingCart, Star, Settings, Phone, Image, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, Tags, ShoppingCart, Star, Settings, Phone, Image, Lock, LogOut } from 'lucide-react';
 
 const NAV = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
@@ -11,6 +11,7 @@ const NAV = [
   { to: '/admin/feedback', icon: Star, label: 'Feedback' },
   { to: '/admin/content', icon: Settings, label: 'Site Content' },
   { to: '/admin/contact', icon: Phone, label: 'Contact Info' },
+  { to: '/admin/change-password', icon: Lock, label: 'Change Password' },
 ];
 
 export default function AdminLayout({ children, title }) {

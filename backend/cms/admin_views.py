@@ -1,15 +1,20 @@
 import json
+import secrets
+from datetime import timedelta
 from decimal import Decimal
 from functools import wraps
 
-from django.contrib.auth import authenticate
+from django.conf import settings
+from django.contrib.auth import authenticate, get_user_model
+from django.core.mail import send_mail
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .models import Category, ContactInfo, Feedback, HomePageContent, Order, Product
+from .models import Category, ContactInfo, Feedback, HomePageContent, Order, PasswordResetToken, Product
 
-from django.conf import settings
+User = get_user_model()
 
 ADMIN_TOKENS = {}
 
@@ -90,9 +95,14 @@ def admin_products(request):
 
     try:
         body = json.loads(request.body or "{}")
+        category_id = body.get("categoryId")
+        if not category_id:
+            return cors_response({"error": "Category is required"}, 400)
+        if not Category.objects.filter(id=category_id).exists():
+            return cors_response({"error": "Category does not exist"}, 400)
         product = Product.objects.create(
             name=body.get("name", ""),
-            category_id=body.get("categoryId"),
+            category_id=category_id,
             price=body.get("price", 0),
             unit=body.get("unit", ""),
             description=body.get("description", ""),
@@ -474,5 +484,178 @@ def admin_contact_info(request):
                 setattr(info, mapping, body[field])
         info.save()
         return cors_response({"status": "updated"})
+    except Exception as e:
+        return cors_response({"error": str(e)}, 400)
+
+
+@csrf_exempt
+@require_http_methods(["GET", "OPTIONS"])
+def setup_status(request):
+    if request.method == "OPTIONS":
+        return cors_response({})
+    needs_setup = not User.objects.filter(is_staff=True).exists()
+    return cors_response({"needsSetup": needs_setup})
+
+
+@csrf_exempt
+@require_http_methods(["POST", "OPTIONS"])
+def admin_setup(request):
+    if request.method == "OPTIONS":
+        return cors_response({})
+    if User.objects.filter(is_staff=True).exists():
+        return cors_response({"error": "Admin already exists"}, 400)
+    try:
+        body = json.loads(request.body or "{}")
+        username = body.get("username", "").strip()
+        email = body.get("email", "").strip()
+        password = body.get("password", "")
+        if not username or not password:
+            return cors_response({"error": "Username and password are required"}, 400)
+        if len(password) < 6:
+            return cors_response({"error": "Password must be at least 6 characters"}, 400)
+        if User.objects.filter(username=username).exists():
+            return cors_response({"error": "Username already taken"}, 400)
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            is_staff=True,
+        )
+        token = secrets.token_hex(32)
+        ADMIN_TOKENS[token] = user.username
+        return cors_response({"token": token, "username": user.username, "status": "created"}, 201)
+    except Exception as e:
+        return cors_response({"error": str(e)}, 400)
+
+
+@csrf_exempt
+@require_http_methods(["PUT", "OPTIONS"])
+@require_admin
+def change_password(request):
+    if request.method == "OPTIONS":
+        return cors_response({})
+    try:
+        body = json.loads(request.body or "{}")
+        current = body.get("currentPassword", "")
+        new = body.get("newPassword", "")
+        if not current or not new:
+            return cors_response({"error": "Current and new password are required"}, 400)
+        if len(new) < 6:
+            return cors_response({"error": "New password must be at least 6 characters"}, 400)
+        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+        token = auth_header.replace("Bearer ", "").strip()
+        username = ADMIN_TOKENS.get(token)
+        if not username:
+            return cors_response({"error": "Unauthorized"}, 401)
+        user = authenticate(username=username, password=current)
+        if user is None:
+            return cors_response({"error": "Current password is incorrect"}, 400)
+        user.set_password(new)
+        user.save()
+        new_token = secrets.token_hex(32)
+        ADMIN_TOKENS[new_token] = user.username
+        return cors_response({"token": new_token, "status": "updated"})
+    except Exception as e:
+        return cors_response({"error": str(e)}, 400)
+
+
+@csrf_exempt
+@require_http_methods(["POST", "OPTIONS"])
+def forgot_password(request):
+    if request.method == "OPTIONS":
+        return cors_response({})
+    try:
+        body = json.loads(request.body or "{}")
+        email = body.get("email", "").strip()
+        if not email:
+            return cors_response({"error": "Email is required"}, 400)
+
+        try:
+            user = User.objects.get(email=email, is_staff=True)
+        except User.DoesNotExist:
+            return cors_response({"error": "No admin account found with that email"}, 404)
+
+        code = f"{secrets.randbelow(1000000):06d}"
+        PasswordResetToken.objects.create(email=user.email, code=code)
+
+        try:
+            send_mail(
+                subject="Your Password Reset Code — R&R Food Products Admin",
+                message=f"Your password reset code is:\n\n{code}\n\nThis code expires in 15 minutes.\n\nIf you did not request this, please ignore this email.",
+                from_email=settings.DEFAULT_FROM_EMAIL or "noreply@rnrfood.com",
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+        except Exception:
+            return cors_response({"error": "Could not send email. Contact your administrator."}, 500)
+
+        return cors_response({"status": "sent"})
+    except Exception as e:
+        return cors_response({"error": str(e)}, 400)
+
+
+@csrf_exempt
+@require_http_methods(["POST", "OPTIONS"])
+def verify_reset_code(request):
+    if request.method == "OPTIONS":
+        return cors_response({})
+    try:
+        body = json.loads(request.body or "{}")
+        email = body.get("email", "").strip()
+        code = body.get("code", "").strip()
+        if not email or not code:
+            return cors_response({"error": "Email and code are required"}, 400)
+
+        try:
+            reset = PasswordResetToken.objects.filter(
+                email=email, code=code, is_used=False
+            ).latest("created_at")
+        except PasswordResetToken.DoesNotExist:
+            return cors_response({"error": "Invalid or expired code"}, 400)
+
+        if reset.is_expired():
+            return cors_response({"error": "Code has expired. Request a new one."}, 400)
+
+        token = secrets.token_hex(32)
+        reset.token = token
+        reset.save()
+
+        return cors_response({"token": token})
+    except Exception as e:
+        return cors_response({"error": str(e)}, 400)
+
+
+@csrf_exempt
+@require_http_methods(["POST", "OPTIONS"])
+def reset_password(request):
+    if request.method == "OPTIONS":
+        return cors_response({})
+    try:
+        body = json.loads(request.body or "{}")
+        token_str = body.get("token", "").strip()
+        new_password = body.get("password", "")
+        if not token_str or not new_password:
+            return cors_response({"error": "Token and password are required"}, 400)
+        if len(new_password) < 6:
+            return cors_response({"error": "Password must be at least 6 characters"}, 400)
+
+        try:
+            reset = PasswordResetToken.objects.get(token=token_str, is_used=False)
+        except PasswordResetToken.DoesNotExist:
+            return cors_response({"error": "Invalid or expired token"}, 400)
+
+        if reset.is_expired():
+            return cors_response({"error": "Token has expired"}, 400)
+
+        try:
+            user = User.objects.get(email=reset.email, is_staff=True)
+        except User.DoesNotExist:
+            return cors_response({"error": "User not found"}, 404)
+
+        user.set_password(new_password)
+        user.save()
+        reset.is_used = True
+        reset.save()
+        return cors_response({"status": "password_reset"})
     except Exception as e:
         return cors_response({"error": str(e)}, 400)
