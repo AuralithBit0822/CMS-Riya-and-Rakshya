@@ -313,11 +313,6 @@ See `render.yaml` for Django backend deployment settings.
 
 ---
 
-## Developed By
-
-### Supriya Dwivedi
-
-Full Stack Java Developer & Web Developer
 
 ### GitHub
 
