@@ -75,9 +75,21 @@ python manage.py runserver
 ```
 Riya-and-Rakshya-Food-Products/
 │
+├── .gitattributes
+├── .gitignore
+├── .npmrc
+├── package.json
+├── package-lock.json
+├── vercel.json
+├── render.yaml
+├── renumber_products.py
+│
 ├──═ PUBLIC WEBSITE ═══════════════════════════════════════════════
 │   ├── public/
+│   │   ├── _headers
 │   │   ├── index.html
+│   │   ├── robots.txt
+│   │   ├── sitemap.xml
 │   │   ├── images/
 │   │   └── videos/
 │   │
@@ -89,24 +101,29 @@ Riya-and-Rakshya-Food-Products/
 │   │   ├── data/products.js
 │   │   ├── components/
 │   │   │   ├── Navbar.jsx
-│   │   │   └── Footer.jsx
+│   │   │   ├── Navbar.css
+│   │   │   ├── Footer.jsx
+│   │   │   └── Footer.css
 │   │   ├── pages/
 │   │   │   ├── Home.jsx
+│   │   │   ├── Home.css
 │   │   │   ├── Products.jsx
 │   │   │   ├── ProductDetails.jsx
 │   │   │   ├── Varieties.jsx
 │   │   │   ├── About.jsx
 │   │   │   ├── Contact.jsx
 │   │   │   ├── Cart.jsx
-│   │   │   └── Wishlist.jsx
-│   │   └── styles/global.css
+│   │   │   ├── Wishlist.jsx
+│   │   │   └── Pages.css
+│   │   └── styles/
+│   │       ├── global.css
+│   │       └── Admin.css
 │   │
-│   └── package.json
+│   └── build/
 │
 ├──═ CMS DASHBOARD ═══════════════════════════════════════════════
 │   └── src/pages/admin/
 │       ├── AdminLogin.jsx
-│       ├── AdminLayout.jsx
 │       ├── Dashboard.jsx
 │       ├── AdminProducts.jsx
 │       ├── AdminCategories.jsx
@@ -114,31 +131,38 @@ Riya-and-Rakshya-Food-Products/
 │       ├── AdminFeedback.jsx
 │       ├── AdminContent.jsx
 │       ├── AdminContact.jsx
-│       └── AdminMedia.jsx
+│       ├── AdminMedia.jsx
+│       ├── ChangePassword.jsx
+│       └── ResetPassword.jsx
 │
 ├──═ BACKEND (Django API) ════════════════════════════════════════
-│   ├── backend/
-│   │   ├── manage.py
-│   │   ├── requirements.txt
-│   │   ├── db.sqlite3
-│   │   │
-│   │   ├── cms_backend/
-│   │   │   ├── settings.py
-│   │   │   ├── urls.py
-│   │   │   ├── wsgi.py
-│   │   │   └── asgi.py
-│   │   │
-│   │   └── cms/
-│   │       ├── admin.py
-│   │       ├── admin_views.py
-│   │       ├── models.py
-│   │       ├── views.py
-│   │       ├── urls.py
-│   │       ├── management/commands/
-│   │       └── migrations/
-│   │
-│   ├── vercel.json
-│   └── render.yaml
+│   └── backend/
+│       ├── manage.py
+│       ├── requirements.txt
+│       ├── runtime.txt
+│       ├── Procfile
+│       ├── db.sqlite3
+│       ├── .env
+│       ├── .env.example
+│       ├── check_users.py
+│       ├── frontend_build/
+│       │
+│       ├── cms_backend/
+│       │   ├── settings.py
+│       │   ├── urls.py
+│       │   ├── wsgi.py
+│       │   └── asgi.py
+│       │
+│       └── cms/
+│           ├── admin.py
+│           ├── admin_views.py
+│           ├── models.py
+│           ├── views.py
+│           ├── urls.py
+│           ├── apps.py
+│           ├── tests.py
+│           ├── management/commands/
+│           └── migrations/
 │
 └── README.md
 ```
@@ -164,15 +188,17 @@ Riya-and-Rakshya-Food-Products/
 
 | Page | Route | Features |
 |------|-------|---------|
-| Login | `/admin/login` | Token-based authentication |
+| Login | `/admin/login` | Token-based authentication, forgot password, first-run setup |
 | Dashboard | `/admin` | Summary counts (products, categories, orders, feedback) |
 | Products | `/admin/products` | Product CRUD with image upload |
 | Categories | `/admin/categories` | Category CRUD |
 | Orders | `/admin/orders` | Order management with status updates |
 | Feedback | `/admin/feedback` | Testimonial CRUD |
 | Site Content | `/admin/content` | Homepage hero, stats, video, images editor |
-| Contact Info | `/admin/contact` | Phone, email, address, hours editor |
+| Contact Info | `/admin/contact` | Phone, email, address, hours, social links editor |
 | Media | `/admin/media` | Upload, browse, delete images & videos |
+| Change Password | `/admin/change-password` | Update password from within dashboard |
+| Reset Password | `/admin/reset-password` | Set new password via email reset link |
 
 ### Backend API
 
@@ -185,7 +211,13 @@ Riya-and-Rakshya-Food-Products/
 | `GET /api/contact-info/` | Contact information |
 | `POST /api/contact-messages/` | Submit contact form |
 | `POST /api/orders/` | Place an order |
+| `GET /api/admin/setup-status/` | Check if admin account needs initial setup |
+| `POST /api/admin/setup/` | Create first admin account (no auth required) |
 | `POST /api/admin/login/` | Authenticate (get token) |
+| `PUT /api/admin/change-password/` | Change password (authenticated) |
+| `POST /api/admin/forgot-password/` | Send 6-digit reset code to admin email |
+| `POST /api/admin/verify-reset-code/` | Verify reset code and get reset token |
+| `POST /api/admin/reset-password/` | Reset password using token |
 | `GET/POST /api/admin/products/` | List / create products |
 | `PUT/DELETE /api/admin/products/:id/` | Update / delete product |
 | `GET/POST /api/admin/categories/` | List / create categories |
@@ -218,9 +250,12 @@ Django Admin is also available at `/django-admin/` (requires staff login).
 
 ### CMS Dashboard
 - Token-based authentication
+- Initial admin account setup wizard (first-run auto-detection)
+- Forgot / reset password with email code verification
+- Change password from within dashboard
 - Product, category, order, feedback CRUD
 - Homepage content editor (hero, stats, video, hero images)
-- Contact information editor
+- Contact information editor (phone, email, address, hours, social links)
 - Media manager (upload, browse, delete images/videos)
 - Dashboard with real-time summary counts
 
@@ -229,6 +264,8 @@ Django Admin is also available at `/django-admin/` (requires staff login).
 - Django Admin interface for database management
 - SQLite database (portable, zero-config)
 - CORS enabled for cross-origin requests
+- Email sending for password reset flows
+- Social media links (Facebook, Instagram, Twitter) exposed via ContactInfo API
 
 ---
 
@@ -236,7 +273,7 @@ Django Admin is also available at `/django-admin/` (requires staff login).
 
 ### Update WhatsApp Number
 
-Update in:
+The WhatsApp number can be updated via the CMS Dashboard (Contact Info editor), or directly in:
 
 ```bash
 src/components/Navbar.jsx
@@ -298,6 +335,8 @@ build/
 ## Deployment
 
 The frontend is deployed on **Vercel** and the backend on **Render**.
+
+**Dual-mode deployment:** The app auto-detects the hostname to serve as a public website (`rnrfood.com`), an admin SPA (`admin.rnrfood.com`), or both modes on localhost.
 
 ### Live Website
 
