@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .models import Category, ContactInfo, Feedback, HomePageContent, Order, PasswordResetToken, Product
+from .models import AboutPageContent, Category, ContactInfo, Feedback, HomePageContent, Order, PasswordResetToken, Product
 
 User = get_user_model()
 
@@ -409,7 +409,56 @@ def admin_feedback_detail(request, feedback_id):
 @csrf_exempt
 @require_http_methods(["GET", "PUT", "OPTIONS"])
 @require_admin
-def admin_site_content(request):
+def admin_about_content(request):
+    content = AboutPageContent.objects.first()
+    if not content:
+        content = AboutPageContent.objects.create()
+
+    if request.method == "GET":
+        return cors_response({
+            "heroImage": content.hero_image,
+            "storyTitle": content.story_title,
+            "storyParagraphs": content.story_paragraphs,
+            "missionTitle": content.mission_title,
+            "missionText": content.mission_text,
+            "visionTitle": content.vision_title,
+            "visionText": content.vision_text,
+            "qualityTitle": content.quality_title,
+            "qualityText": content.quality_text,
+            "stats": content.stats,
+            "whyChooseTitle": content.why_choose_title,
+            "whyChooseItems": content.why_choose_items,
+            "ctaLeftTitle": content.cta_left_title,
+            "ctaLeftText": content.cta_left_text,
+            "ctaRightTitle": content.cta_right_title,
+            "ctaRightText": content.cta_right_text,
+        })
+
+    try:
+        body = json.loads(request.body or "{}")
+        for field, mapping in [
+            ("heroImage", "hero_image"),
+            ("storyTitle", "story_title"), ("storyParagraphs", "story_paragraphs"),
+            ("missionTitle", "mission_title"), ("missionText", "mission_text"),
+            ("visionTitle", "vision_title"), ("visionText", "vision_text"),
+            ("qualityTitle", "quality_title"), ("qualityText", "quality_text"),
+            ("stats", "stats"),
+            ("whyChooseTitle", "why_choose_title"), ("whyChooseItems", "why_choose_items"),
+            ("ctaLeftTitle", "cta_left_title"), ("ctaLeftText", "cta_left_text"),
+            ("ctaRightTitle", "cta_right_title"), ("ctaRightText", "cta_right_text"),
+        ]:
+            if field in body:
+                setattr(content, mapping, body[field])
+        content.save()
+        return cors_response({"status": "updated"})
+    except Exception as e:
+        return cors_response({"error": str(e)}, 400)
+
+
+@csrf_exempt
+@require_http_methods(["GET", "PUT", "OPTIONS"])
+@require_admin
+def admin_home_content(request):
     content = HomePageContent.objects.first()
     if not content:
         content = HomePageContent.objects.create()

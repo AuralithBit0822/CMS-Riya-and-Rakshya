@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import (
+    AboutPageContent,
     Category,
     ContactInfo,
     Feedback,
@@ -23,6 +24,33 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ("is_featured", "is_active", "sort_order")
     list_filter = ("category", "is_active", "is_featured")
     search_fields = ("name", "description", "badge")
+
+
+@admin.register(AboutPageContent)
+class AboutPageContentAdmin(admin.ModelAdmin):
+    fieldsets = (
+        ("Hero", {
+            "fields": ("hero_image",)
+        }),
+        ("Story", {
+            "fields": ("story_title", "story_paragraphs")
+        }),
+        ("Mission & Vision", {
+            "fields": ("mission_title", "mission_text", "vision_title", "vision_text")
+        }),
+        ("Quality & Safety", {
+            "fields": ("quality_title", "quality_text")
+        }),
+        ("Stats", {
+            "fields": ("stats",)
+        }),
+        ("Why Choose", {
+            "fields": ("why_choose_title", "why_choose_items")
+        }),
+        ("Bottom CTAs", {
+            "fields": ("cta_left_title", "cta_left_text", "cta_right_title", "cta_right_text")
+        }),
+    )
 
 
 @admin.register(HomePageContent)

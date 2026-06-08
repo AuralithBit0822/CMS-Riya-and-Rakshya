@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, Tags, ShoppingCart, Star, Settings, Phone, Image, Lock, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, Tags, ShoppingCart, Star, Settings, Phone, Image, Lock, LogOut, FileText } from 'lucide-react';
 
 const NAV = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
@@ -9,7 +9,8 @@ const NAV = [
   { to: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
   { to: '/admin/media', icon: Image, label: 'Media' },
   { to: '/admin/feedback', icon: Star, label: 'Feedback' },
-  { to: '/admin/content', icon: Settings, label: 'Site Content' },
+  { to: '/admin/homecontent', icon: Settings, label: 'Home Content' },
+  { to: '/admin/about', icon: FileText, label: 'About Page' },
   { to: '/admin/contact', icon: Phone, label: 'Contact Info' },
   { to: '/admin/change-password', icon: Lock, label: 'Change Password' },
 ];

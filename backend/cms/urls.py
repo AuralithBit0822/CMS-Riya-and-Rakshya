@@ -4,6 +4,7 @@ from . import admin_views, views
 
 urlpatterns = [
     path("", views.api_root, name="api-root"),
+    path("about-content/", views.about_content, name="about-content"),
     path("site-content/", views.site_content, name="site-content"),
     path("categories/", views.categories, name="categories"),
     path("products/", views.products, name="products"),
@@ -21,7 +22,8 @@ urlpatterns = [
     path("admin/orders/<int:order_id>/", admin_views.admin_order_detail, name="admin-order-detail"),
     path("admin/feedback/", admin_views.admin_feedback, name="admin-feedback"),
     path("admin/feedback/<int:feedback_id>/", admin_views.admin_feedback_detail, name="admin-feedback-detail"),
-    path("admin/site-content/", admin_views.admin_site_content, name="admin-site-content"),
+    path("admin/about-content/", admin_views.admin_about_content, name="admin-about-content"),
+    path("admin/home-content/", admin_views.admin_home_content, name="admin-home-content"),
     path("admin/contact-info/", admin_views.admin_contact_info, name="admin-contact-info"),
     path("admin/upload/", admin_views.admin_upload, name="admin-upload"),
     path("admin/media/", admin_views.admin_media, name="admin-media"),

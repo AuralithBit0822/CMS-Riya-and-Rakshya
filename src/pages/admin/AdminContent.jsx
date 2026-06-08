@@ -20,15 +20,15 @@ export default function AdminContent() {
   }, []);
 
   useEffect(() => {
-    adminFetch('/admin/site-content/')
+    adminFetch('/admin/home-content/')
       .then(data => { setForm(data); setLoading(false); })
-      .catch(() => { showToast('Failed to load site content'); setLoading(false); });
+      .catch(() => { showToast('Failed to load home content'); setLoading(false); });
   }, [showToast]);
 
   const handleSave = async () => {
     try {
-      await adminUpdate('/admin/site-content/', form);
-      showToast('Site content updated');
+      await adminUpdate('/admin/home-content/', form);
+      showToast('Home content updated');
     } catch { showToast('Failed to save'); }
   };
 
@@ -72,10 +72,10 @@ export default function AdminContent() {
     });
   };
 
-  if (loading) return <AdminLayout title="Site Content"><p style={{ color: '#888' }}>Loading...</p></AdminLayout>;
+  if (loading) return <AdminLayout title="Home Content"><p style={{ color: '#888' }}>Loading...</p></AdminLayout>;
 
   return (
-    <AdminLayout title="Site Content">
+    <AdminLayout title="Home Content">
       <div className="admin-card" style={{ padding: 24 }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 20 }}>Homepage Hero Section</h2>
 

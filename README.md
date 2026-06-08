@@ -194,7 +194,7 @@ Riya-and-Rakshya-Food-Products/
 | Categories | `/admin/categories` | Category CRUD |
 | Orders | `/admin/orders` | Order management with status updates |
 | Feedback | `/admin/feedback` | Testimonial CRUD |
-| Site Content | `/admin/content` | Homepage hero, stats, video, images editor |
+| Home Content | `/admin/homecontent` | Homepage hero, stats, video, images editor |
 | Contact Info | `/admin/contact` | Phone, email, address, hours, social links editor |
 | Media | `/admin/media` | Upload, browse, delete images & videos |
 | Change Password | `/admin/change-password` | Update password from within dashboard |
@@ -226,7 +226,7 @@ Riya-and-Rakshya-Food-Products/
 | `PUT/DELETE /api/admin/orders/:id/` | Update / delete order |
 | `GET/POST /api/admin/feedback/` | List / create feedback |
 | `PUT/DELETE /api/admin/feedback/:id/` | Update / delete feedback |
-| `GET/PUT /api/admin/site-content/` | Read / update homepage content |
+| `GET/PUT /api/admin/home-content/` | Read / update homepage content |
 | `GET/PUT /api/admin/contact-info/` | Read / update contact info |
 | `POST /api/admin/upload/` | Upload a file |
 | `GET/DELETE /api/admin/media/` | Browse / delete media files |

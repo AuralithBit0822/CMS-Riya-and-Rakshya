@@ -5,7 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .models import Category, ContactInfo, ContactMessage, Feedback, HomePageContent, Order, Product
+from .models import AboutPageContent, Category, ContactInfo, ContactMessage, Feedback, HomePageContent, Order, Product
 
 
 from django.conf import settings
@@ -50,6 +50,28 @@ def product_to_dict(product):
         "isFeatured": product.is_featured,
         "featuredSortOrder": product.featured_sort_order,
     }
+
+
+def about_content(request):
+    content = AboutPageContent.objects.first() or AboutPageContent()
+    return cors_response({
+        "heroImage": content.hero_image,
+        "storyTitle": content.story_title,
+        "storyParagraphs": content.story_paragraphs,
+        "missionTitle": content.mission_title,
+        "missionText": content.mission_text,
+        "visionTitle": content.vision_title,
+        "visionText": content.vision_text,
+        "qualityTitle": content.quality_title,
+        "qualityText": content.quality_text,
+        "stats": content.stats,
+        "whyChooseTitle": content.why_choose_title,
+        "whyChooseItems": content.why_choose_items,
+        "ctaLeftTitle": content.cta_left_title,
+        "ctaLeftText": content.cta_left_text,
+        "ctaRightTitle": content.cta_right_title,
+        "ctaRightText": content.cta_right_text,
+    })
 
 
 def site_content(request):
@@ -156,6 +178,7 @@ def api_root(request):
     return cors_response({
         "message": "R&R Food Products API",
         "endpoints": {
+            "about-content": "/api/about-content/",
             "site-content": "/api/site-content/",
             "categories": "/api/categories/",
             "products": "/api/products/",
@@ -173,7 +196,8 @@ def api_root(request):
                 "order-detail": "/api/admin/orders/<id>/",
                 "feedback": "/api/admin/feedback/",
                 "feedback-detail": "/api/admin/feedback/<id>/",
-                "site-content": "/api/admin/site-content/",
+                "about-content": "/api/admin/about-content/",
+                "home-content": "/api/admin/home-content/",
                 "contact-info": "/api/admin/contact-info/",
                 "upload": "/api/admin/upload/",
                 "media": "/api/admin/media/",
