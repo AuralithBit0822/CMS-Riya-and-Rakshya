@@ -1,18 +1,19 @@
 import json
 import secrets
+import threading
 from datetime import timedelta
 from decimal import Decimal
 from functools import wraps
 
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .models import AboutPageContent, Category, ContactInfo, Feedback, HomePageContent, Order, PasswordResetToken, Product
+from .models import AboutPageContent, Category, ContactInfo, Department, DepartmentMember, Feedback, HomePageContent, Order, PasswordResetToken, Product
 
 User = get_user_model()
 
@@ -538,6 +539,163 @@ def admin_contact_info(request):
 
 
 @csrf_exempt
+@require_http_methods(["GET", "POST", "OPTIONS"])
+@require_admin
+def admin_departments(request):
+    if request.method == "GET":
+        data = [{
+            "id": d.id,
+            "name": d.name,
+            "description": d.description,
+            "sortOrder": d.sort_order,
+            "isActive": d.is_active,
+            "memberCount": d.members.count(),
+        } for d in Department.objects.all()]
+        return cors_response(data)
+
+    try:
+        body = json.loads(request.body or "{}")
+        d = Department.objects.create(
+            name=body.get("name", ""),
+            description=body.get("description", ""),
+            sort_order=body.get("sortOrder", 0),
+            is_active=body.get("isActive", True),
+        )
+        return cors_response({"id": d.id, "status": "created"}, 201)
+    except Exception as e:
+        return cors_response({"error": str(e)}, 400)
+
+
+@csrf_exempt
+@require_http_methods(["PUT", "DELETE", "OPTIONS"])
+@require_admin
+def admin_department_detail(request, department_id):
+    try:
+        d = Department.objects.get(id=department_id)
+    except Department.DoesNotExist:
+        return cors_response({"error": "Department not found"}, 404)
+
+    if request.method == "DELETE":
+        d.delete()
+        return cors_response({"status": "deleted"})
+
+    try:
+        body = json.loads(request.body or "{}")
+        for field, mapping in [
+            ("name", "name"), ("description", "description"),
+            ("sortOrder", "sort_order"), ("isActive", "is_active"),
+        ]:
+            if field in body:
+                setattr(d, mapping, body[field])
+        d.save()
+        return cors_response({"id": d.id, "status": "updated"})
+    except Exception as e:
+        return cors_response({"error": str(e)}, 400)
+
+
+@csrf_exempt
+@require_http_methods(["GET", "POST", "OPTIONS"])
+@require_admin
+def admin_department_members(request, department_id):
+    try:
+        department = Department.objects.get(id=department_id)
+    except Department.DoesNotExist:
+        return cors_response({"error": "Department not found"}, 404)
+
+    if request.method == "GET":
+        data = [{
+            "id": m.id,
+            "name": m.name,
+            "email": m.email,
+            "phone": m.phone,
+            "role": m.role,
+            "bio": m.bio,
+            "image": m.image,
+        } for m in department.members.all()]
+        return cors_response(data)
+
+    try:
+        body = json.loads(request.body or "{}")
+        member = DepartmentMember.objects.create(
+            department=department,
+            name=body.get("name", ""),
+            email=body.get("email", ""),
+            phone=body.get("phone", ""),
+            role=body.get("role", ""),
+            bio=body.get("bio", ""),
+            image=body.get("image", ""),
+        )
+        def send_notification():
+            html = f"""\
+<!DOCTYPE html>
+<html>
+<body style="font-family:Arial,sans-serif;padding:24px;background:#f4f4f4;">
+  <div style="max-width:500px;margin:auto;background:#fff;border-radius:8px;padding:24px;">
+    <h2 style="color:#C8102E;">R&R Food Products</h2>
+    <p>Dear <strong>{member.name}</strong>,</p>
+    <p>You have been added to the <strong>'{department.name}'</strong> department.</p>
+    <p><strong>Role:</strong> {member.role or 'Team Member'}</p>
+    <hr style="border:none;border-top:1px solid #eee;margin:20px 0;">
+    <p style="color:#666;">We're excited to have you on board!</p>
+    <p style="color:#888;font-size:12px;">Riya & Rakshya Food Products</p>
+  </div>
+</body>
+</html>"""
+            text = (
+                f"Dear {member.name},\n\n"
+                f"You have been added to the '{department.name}' department "
+                f"at Riya & Rakshya Food Products.\n\n"
+                f"Role: {member.role or 'Team Member'}\n\n"
+                f"We're excited to have you on board!\n\n"
+                f"R&R Food Products Team"
+            )
+            msg = EmailMultiAlternatives(
+                f"You've been added to {department.name} — R&R Food Products",
+                text,
+                settings.DEFAULT_FROM_EMAIL or "noreply@rnrfood.com",
+                [member.email],
+            )
+            msg.attach_alternative(html, "text/html")
+            try:
+                msg.send(fail_silently=True)
+            except Exception:
+                pass
+
+        threading.Thread(target=send_notification, daemon=True).start()
+        return cors_response({"id": member.id, "status": "created"}, 201)
+    except Exception as e:
+        return cors_response({"error": str(e)}, 400)
+
+
+@csrf_exempt
+@require_http_methods(["PUT", "DELETE", "OPTIONS"])
+@require_admin
+def admin_department_member_detail(request, department_id, member_id):
+    try:
+        member = DepartmentMember.objects.get(id=member_id, department_id=department_id)
+    except DepartmentMember.DoesNotExist:
+        return cors_response({"error": "Member not found"}, 404)
+
+    if request.method == "DELETE":
+        member.delete()
+        return cors_response({"status": "deleted"})
+
+    try:
+        body = json.loads(request.body or "{}")
+        for field, mapping in [
+            ("name", "name"), ("email", "email"),
+            ("phone", "phone"), ("role", "role"),
+            ("bio", "bio"), ("image", "image"),
+        ]:
+            if field in body:
+                setattr(member, mapping, body[field])
+        member.save()
+        return cors_response({"id": member.id, "status": "updated"})
+    except Exception as e:
+        return cors_response({"error": str(e)}, 400)
+
+
+@csrf_exempt
 @require_http_methods(["GET", "OPTIONS"])
 def setup_status(request):
     if request.method == "OPTIONS":
@@ -706,5 +864,64 @@ def reset_password(request):
         reset.is_used = True
         reset.save()
         return cors_response({"status": "password_reset"})
+    except Exception as e:
+        return cors_response({"error": str(e)}, 400)
+
+
+@csrf_exempt
+@require_http_methods(["POST", "OPTIONS"])
+@require_admin
+def admin_send_message(request):
+    if request.method == "OPTIONS":
+        return cors_response({})
+    try:
+        body = json.loads(request.body or "{}")
+        member_ids = body.get("member_ids", [])
+        subject = body.get("subject", "").strip()
+        message_text = body.get("message", "").strip()
+
+        if not member_ids or not subject or not message_text:
+            return cors_response({"error": "member_ids, subject, and message are required"}, 400)
+
+        members = DepartmentMember.objects.filter(id__in=member_ids)
+        if not members.exists():
+            return cors_response({"error": "No valid members found"}, 404)
+
+        def send_bulk():
+            for member in members:
+                html = f"""\
+<!DOCTYPE html>
+<html>
+<body style="font-family:Arial,sans-serif;padding:24px;background:#f4f4f4;">
+  <div style="max-width:500px;margin:auto;background:#fff;border-radius:8px;padding:24px;">
+    <h2 style="color:#C8102E;">R&R Food Products</h2>
+    <p>Dear <strong>{member.name}</strong>,</p>
+    <div style="margin:16px 0;padding:16px;background:#f9f9f9;border-radius:6px;line-height:1.7;">
+      {message_text}
+    </div>
+    <hr style="border:none;border-top:1px solid #eee;margin:20px 0;">
+    <p style="color:#888;font-size:12px;">Riya & Rakshya Food Products</p>
+  </div>
+</body>
+</html>"""
+                text = (
+                    f"Dear {member.name},\n\n"
+                    f"{message_text}\n\n"
+                    f"R&R Food Products Team"
+                )
+                msg = EmailMultiAlternatives(
+                    subject,
+                    text,
+                    settings.DEFAULT_FROM_EMAIL or "noreply@rnrfood.com",
+                    [member.email],
+                )
+                msg.attach_alternative(html, "text/html")
+                try:
+                    msg.send(fail_silently=True)
+                except Exception:
+                    pass
+
+        threading.Thread(target=send_bulk, daemon=True).start()
+        return cors_response({"status": "sent", "count": len(members)})
     except Exception as e:
         return cors_response({"error": str(e)}, 400)

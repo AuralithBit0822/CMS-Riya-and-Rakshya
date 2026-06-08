@@ -21,6 +21,8 @@ import AdminAbout from './pages/admin/AdminAbout';
 import AdminContent from './pages/admin/AdminContent';
 import AdminContact from './pages/admin/AdminContact';
 import AdminMedia from './pages/admin/AdminMedia';
+import AdminDepartments from './pages/admin/AdminDepartments';
+import AdminDepartmentMembers from './pages/admin/AdminDepartmentMembers';
 import ChangePassword from './pages/admin/ChangePassword';
 import ResetPassword from './pages/admin/ResetPassword';
 import './styles/global.css';
@@ -98,6 +100,8 @@ export default function App() {
             <Route path="/admin/feedback" element={<PrivateRoute><AdminFeedback /></PrivateRoute>} />
             <Route path="/admin/homecontent" element={<PrivateRoute><AdminContent /></PrivateRoute>} />
             <Route path="/admin/about" element={<PrivateRoute><AdminAbout /></PrivateRoute>} />
+            <Route path="/admin/departments" element={<PrivateRoute><AdminDepartments /></PrivateRoute>} />
+            <Route path="/admin/departments/:id/members" element={<PrivateRoute><AdminDepartmentMembers /></PrivateRoute>} />
             <Route path="/admin/contact" element={<PrivateRoute><AdminContact /></PrivateRoute>} />
             <Route path="/admin/media" element={<PrivateRoute><AdminMedia /></PrivateRoute>} />
             <Route path="/admin/change-password" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
@@ -140,6 +144,8 @@ export default function App() {
             <Route path="/admin/feedback" element={<PrivateRoute><AdminFeedback /></PrivateRoute>} />
             <Route path="/admin/homecontent" element={<PrivateRoute><AdminContent /></PrivateRoute>} />
             <Route path="/admin/about" element={<PrivateRoute><AdminAbout /></PrivateRoute>} />
+            <Route path="/admin/departments" element={<PrivateRoute><AdminDepartments /></PrivateRoute>} />
+            <Route path="/admin/departments/:id/members" element={<PrivateRoute><AdminDepartmentMembers /></PrivateRoute>} />
             <Route path="/admin/contact" element={<PrivateRoute><AdminContact /></PrivateRoute>} />
             <Route path="/admin/media" element={<PrivateRoute><AdminMedia /></PrivateRoute>} />
             <Route path="/admin/change-password" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />

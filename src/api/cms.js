@@ -181,6 +181,10 @@ export async function resetPassword(token, password) {
   return res.json();
 }
 
+export async function adminSendMessage(memberIds, subject, message) {
+  return adminCreate('/admin/send-message/', { member_ids: memberIds, subject, message });
+}
+
 export async function adminUpload(file, folder = 'uploads') {
   const token = getToken();
   const formData = new FormData();

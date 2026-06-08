@@ -199,6 +199,35 @@ class Order(TimeStampedModel):
         return f"Order #{self.pk} - {self.full_name}"
 
 
+class Department(TimeStampedModel):
+    name = models.CharField(max_length=180)
+    description = models.TextField(blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["sort_order", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+class DepartmentMember(TimeStampedModel):
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name="members")
+    name = models.CharField(max_length=180)
+    email = models.EmailField()
+    phone = models.CharField(max_length=40, blank=True)
+    role = models.CharField(max_length=120, blank=True)
+    bio = models.TextField(blank=True)
+    image = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} - {self.department.name}"
+
+
 class PasswordResetToken(models.Model):
     email = models.EmailField()
     code = models.CharField(max_length=6)
