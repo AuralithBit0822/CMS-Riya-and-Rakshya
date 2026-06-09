@@ -652,7 +652,7 @@ def admin_department_members(request, department_id):
             msg = EmailMultiAlternatives(
                 f"You've been added to {department.name} — R&R Food Products",
                 text,
-                settings.DEFAULT_FROM_EMAIL or "noreply@rnrfood.com",
+                settings.DEFAULT_FROM_EMAIL or "R&R Food Products <tsushmi436@gmail.com>",
                 [member.email],
             )
             msg.attach_alternative(html, "text/html")
@@ -789,7 +789,7 @@ def forgot_password(request):
             send_mail(
                 subject="Your Password Reset Code — R&R Food Products Admin",
                 message=f"Your password reset code is:\n\n{code}\n\nThis code expires in 15 minutes.\n\nIf you did not request this, please ignore this email.",
-                from_email=settings.DEFAULT_FROM_EMAIL or "noreply@rnrfood.com",
+                from_email=settings.DEFAULT_FROM_EMAIL or "R&R Food Products <tsushmi436@gmail.com>",
                 recipient_list=[user.email],
                 fail_silently=False,
             )
@@ -912,7 +912,7 @@ def admin_send_message(request):
                 msg = EmailMultiAlternatives(
                     subject,
                     text,
-                    settings.DEFAULT_FROM_EMAIL or "noreply@rnrfood.com",
+                    settings.DEFAULT_FROM_EMAIL or "R&R Food Products <tsushmi436@gmail.com>",
                     [member.email],
                 )
                 msg.attach_alternative(html, "text/html")
