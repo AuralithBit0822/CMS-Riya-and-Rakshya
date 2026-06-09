@@ -197,7 +197,7 @@ Riya-and-Rakshya-Food-Products/
 | Home Content | `/admin/homecontent` | Homepage hero, stats, video, images editor |
 | Contact Info | `/admin/contact` | Phone, email, address, hours, social links editor |
 | Media | `/admin/media` | Upload, browse, delete images & videos |
-| Change Password | `/admin/change-password` | Update password from within dashboard |
+| Account | `/admin/change-password` | Update email or password independently (two separate forms) |
 | Reset Password | `/admin/reset-password` | Set new password via email reset link |
 
 ### Backend API
@@ -215,7 +215,8 @@ Riya-and-Rakshya-Food-Products/
 | `POST /api/admin/setup/` | Create first admin account (no auth required) |
 | `POST /api/admin/login/` | Authenticate (get token) |
 | `PUT /api/admin/change-password/` | Change password (authenticated) |
-| `POST /api/admin/forgot-password/` | Send 6-digit reset code to admin email |
+| `GET/PUT /api/admin/profile/` | Read / update admin email |
+| `POST /api/admin/forgot-password/` | Send 6-digit reset code to admin email (returns code in debug mode) |
 | `POST /api/admin/verify-reset-code/` | Verify reset code and get reset token |
 | `POST /api/admin/reset-password/` | Reset password using token |
 | `GET/POST /api/admin/products/` | List / create products |
@@ -251,8 +252,8 @@ Django Admin is also available at `/django-admin/` (requires staff login).
 ### CMS Dashboard
 - Token-based authentication
 - Initial admin account setup wizard (first-run auto-detection)
-- Forgot / reset password with email code verification
-- Change password from within dashboard
+- Forgot / reset password with email code verification (with DEBUG-mode fallback showing the code in the response)
+- Account page with separate Change Email and Change Password forms
 - Product, category, order, feedback CRUD
 - Homepage content editor (hero, stats, video, hero images)
 - Contact information editor (phone, email, address, hours, social links)
@@ -264,7 +265,7 @@ Django Admin is also available at `/django-admin/` (requires staff login).
 - Django Admin interface for database management
 - SQLite database (portable, zero-config)
 - CORS enabled for cross-origin requests
-- Email sending for password reset flows
+- Email sending for password reset flows (with error logging and debug-mode fallback)
 - Social media links (Facebook, Instagram, Twitter) exposed via ContactInfo API
 
 ---
