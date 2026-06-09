@@ -1,3 +1,4 @@
+import logging #for email error 
 import json
 import secrets
 import threading
@@ -7,7 +8,7 @@ from functools import wraps
 
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -15,6 +16,7 @@ from django.views.decorators.http import require_http_methods
 
 from .models import AboutPageContent, Category, ContactInfo, Department, DepartmentMember, Feedback, HomePageContent, Order, PasswordResetToken, Product
 
+logger = logging.getLogger(__name__)  #for email error 
 User = get_user_model()
 
 ADMIN_TOKENS = {}
@@ -767,6 +769,36 @@ def change_password(request):
 
 
 @csrf_exempt
+@require_http_methods(["GET", "PUT", "OPTIONS"])
+@require_admin
+def admin_profile(request):
+    if request.method == "OPTIONS":
+        return cors_response({})
+    auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+    token = auth_header.replace("Bearer ", "").strip()
+    username = ADMIN_TOKENS.get(token)
+    if not username:
+        return cors_response({"error": "Unauthorized"}, 401)
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return cors_response({"error": "User not found"}, 404)
+
+    if request.method == "GET":
+        return cors_response({"email": user.email or ""})
+
+    try:
+        body = json.loads(request.body or "{}")
+        email = body.get("email", "").strip()
+        if email:
+            user.email = email
+            user.save()
+        return cors_response({"email": user.email or ""})
+    except Exception as e:
+        return cors_response({"error": str(e)}, 400)
+
+
+@csrf_exempt
 @require_http_methods(["POST", "OPTIONS"])
 def forgot_password(request):
     if request.method == "OPTIONS":
@@ -793,7 +825,13 @@ def forgot_password(request):
                 recipient_list=[user.email],
                 fail_silently=False,
             )
-        except Exception:
+        except Exception as e:
+            logger.error(f"Failed to send reset email to {user.email}: {e}", exc_info=True)
+            if settings.DEBUG:
+                return cors_response({
+                    "error": f"Could not send email: {e}",
+                    "code": code,
+                }, 500)
             return cors_response({"error": "Could not send email. Contact your administrator."}, 500)
 
         return cors_response({"status": "sent"})

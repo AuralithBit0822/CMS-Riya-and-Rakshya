@@ -13,7 +13,7 @@ const NAV = [
   { to: '/admin/about', icon: FileText, label: 'About Page' },
   { to: '/admin/departments', icon: Building2, label: 'Departments' },
   { to: '/admin/contact', icon: Phone, label: 'Contact Info' },
-  { to: '/admin/change-password', icon: Lock, label: 'Change Password' },
+  { to: '/admin/change-password', icon: Lock, label: 'Account' },
 ];
 
 export default function AdminLayout({ children, title }) {

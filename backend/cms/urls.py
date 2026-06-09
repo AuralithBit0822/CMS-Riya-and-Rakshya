@@ -33,6 +33,7 @@ urlpatterns = [
     path("admin/departments/<int:department_id>/", admin_views.admin_department_detail, name="admin-department-detail"),
     path("admin/departments/<int:department_id>/members/", admin_views.admin_department_members, name="admin-department-members"),
     path("admin/departments/<int:department_id>/members/<int:member_id>/", admin_views.admin_department_member_detail, name="admin-department-member-detail"),
+    path("admin/profile/", admin_views.admin_profile, name="admin-profile"),
     path("admin/change-password/", admin_views.change_password, name="change-password"),
     path("admin/forgot-password/", admin_views.forgot_password, name="forgot-password"),
     path("admin/verify-reset-code/", admin_views.verify_reset_code, name="verify-reset-code"),

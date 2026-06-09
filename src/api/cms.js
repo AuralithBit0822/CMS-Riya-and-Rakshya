@@ -181,6 +181,10 @@ export async function resetPassword(token, password) {
   return res.json();
 }
 
+export async function adminUpdateProfile(data) {
+  return adminUpdate('/admin/profile/', data);
+}
+
 export async function adminSendMessage(memberIds, subject, message) {
   return adminCreate('/admin/send-message/', { member_ids: memberIds, subject, message });
 }
